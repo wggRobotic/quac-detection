@@ -1,2 +1,30 @@
 # quac-video
 quac_video package
+
+## detection_server
+### subscribers
+- `<camera_names[i]>/bgrd` : `quac_interfaces/msgs/ImageBGRD`
+- `<object_name>/delete` : `std_msgs/msg/String`
+
+### publishers
+- `<camera_names[i]>/<object_name>s` : `quac_interfaces/msgs/DetectedObjectArray`
+- `<camera_names[i]>/<object_name>s/bounding_boxes` : `quac_interfaces/msgs/BoundingBox`
+- `<object_name>s` : `quac_interfaces/msgs/DetectedObjectArray`
+- `<object_name>s/images` : `sensor_msgs/msg/CompressedImage`
+
+### parameters
+- `object_name` type of object detected by the server
+- `camera_names` : `array` names of the cameras
+- `publish_rate` rate that globally mapped objects are published at
+- `publish_images_period` rate that images of globally mapped objects are published at
+- `reference_frame` frame objects are mapped relative to
+- `consideration_radius` radius around a mapped object in which detected objects are counted towards it 
+
+## qrcode_detection_server : detection_server
+
+## yolo_detection_server : detection_server
+
+### parameters
+- `model_path` path to the onnx model 
+- `engine_path` path to the tensorrt engine
+- `labels_path` path to the labels file
