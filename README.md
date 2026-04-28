@@ -1,5 +1,5 @@
-# quac-video
-quac_video package
+# quac-detection
+quac_detection package
 
 ## detection_server
 ### subscribers
