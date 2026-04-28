@@ -13,18 +13,22 @@ quac_detection package
 - `<object_name>s/images` : `sensor_msgs/msg/CompressedImage`
 
 ### parameters
-- `object_name` type of object detected by the server
-- `camera_names` : `array` names of the cameras
-- `publish_rate` rate that globally mapped objects are published at
-- `publish_images_period` rate that images of globally mapped objects are published at
-- `reference_frame` frame objects are mapped relative to
-- `consideration_radius` radius around a mapped object in which detected objects are counted towards it 
+```
+object_name: String            # type of object detected by the server
+camera_names: String[]         # names of the cameras
+publish_rate: int              # rate that globally mapped objects are published at
+publish_images_period: int     # rate that images of globally mapped objects are published at
+reference_frame: String        # frame objects are mapped relative to
+consideration_radius: double   # radius around a mapped object in which detected objects are counted towards it 
+```
 
 ## qrcode_detection_server : detection_server
 
 ## yolo_detection_server : detection_server
 
 ### parameters
-- `model_path` path to the onnx model 
-- `engine_path` path to the tensorrt engine
-- `labels_path` path to the labels file
+```
+model_path: String      # path to the onnx model 
+engine_path: String     # path to the tensorrt engine
+labels_path: String     # path to the labels file
+```
