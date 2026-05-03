@@ -1,0 +1,6 @@
+[submodule "quac_detection/YOLOs-CPP-TensorRT"]
+	path = quac_detection/YOLOs-CPP-TensorRT
+	url = https://github.com/Geekgineer/YOLOs-CPP-TensorRT
+[submodule "quac_detection/quirc"]
+	path = quac_detection/quirc
+	url = https://github.com/dlbeer/quirc.git
