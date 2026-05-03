@@ -22,6 +22,8 @@ DetectionServer::DetectionServer(const std::string& name, DetectionCallback call
   declare_parameter<double>("consideration_radius", 0.1);
   param.consideration_radius = get_parameter("consideration_radius").as_double();
 
+  mapping.object_counter = 0;
+
   // create callback group
   callback_group = create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
@@ -33,8 +35,7 @@ DetectionServer::DetectionServer(const std::string& name, DetectionCallback call
   mapping.delete_subscriber = create_subscription<std_msgs::msg::String>(
     param.object_name + "s/delete",
     10,
-    std::bind(&DetectionServer::delete_callback, this, std::placeholders::_1),
-    options
+    std::bind(&DetectionServer::delete_callback, this, std::placeholders::_1)
   );
 
   mapping.publishing.objects.timer = create_wall_timer(std::chrono::milliseconds((int)(1000.f/(float)publish_rate)), std::bind(&DetectionServer::publish_objects_callback, this), callback_group);
@@ -131,14 +132,23 @@ void DetectionServer::publish_images_callback()
 
   for (int i = 0; i < image_msgs.size(); i++) mapping.publishing.images.image_publisher->publish(*image_msgs[i]);
 
-  mapping.publishing.images.json_publisher->publish(json_msg);
+  if (image_msgs.size() > 0) mapping.publishing.images.json_publisher->publish(json_msg);
 
   mapping.publishing.images.busy.store(false);
 }
 
 void DetectionServer::delete_callback(const std_msgs::msg::String::SharedPtr msg)
 {
+  std::lock_guard<std::mutex> lock(mapping.mutex);
 
+  for (int i = 0; i < mapping.objects.size(); i++)
+  {
+    if (mapping.objects[i].object.header.frame_id == msg->data)
+    {
+      mapping.objects.erase(mapping.objects.begin() + i);
+      break;
+    }
+  }
 }
 
 void create_mapped_image(
@@ -151,7 +161,7 @@ void create_mapped_image(
   cv::Mat view(bgrd_image->height, bgrd_image->width, CV_8UC3, bgrd_image->bgr_data.data());
   cv::Mat copy = view.clone();
 
-  // but bounding box
+  // put bounding box
   {
     cv::Scalar color(0, 0, 255);
 
@@ -209,7 +219,7 @@ void DetectionServer::image_callback(quac_interfaces::msg::ImageBGRD::SharedPtr 
   if (detections.size() == 0) { camera_handlers[i]->busy.store(false); return; }
 
   quac_interfaces::msg::DetectedObjectArray object_msg;
-  object_msg.header.stamp = now();
+  object_msg.header.stamp = msg->header.stamp;
   object_msg.header.frame_id = msg->header.frame_id;
   object_msg.objects.reserve(detections.size());
 
@@ -218,7 +228,7 @@ void DetectionServer::image_callback(quac_interfaces::msg::ImageBGRD::SharedPtr 
     quac_interfaces::msg::DetectedObject object;
     object.header.frame_id = "detection_" + std::to_string(j);
     object.header.stamp = msg->header.stamp;
-    object.box = detections[i];
+    object.box = detections[j];
 
     object.pose.orientation.x = 0.0;
     object.pose.orientation.y = 0.0;
@@ -285,7 +295,7 @@ void DetectionServer::image_callback(quac_interfaces::msg::ImageBGRD::SharedPtr 
     {
       if (k < mapping.objects.size())
       {
-        if (object_msg.objects[j].box.header.frame_id == mapping.objects[k].object.header.frame_id)
+        if (object_msg.objects[j].box.header.frame_id == mapping.objects[k].object.box.header.frame_id)
         {
           geometry_msgs::msg::Point& mapped_object_pos = mapping.objects[k].object.pose.position;
           geometry_msgs::msg::Point& object_pos = object_msg.objects[j].pose.position;
@@ -297,7 +307,6 @@ void DetectionServer::image_callback(quac_interfaces::msg::ImageBGRD::SharedPtr 
           );
           if (distance < param.consideration_radius)
           {
-            
             mapped_object_pos.x = 
               (mapped_object_pos.x * (double)mapping.objects[k].times_detected + object_pos.x) / 
               (double)(mapping.objects[k].times_detected + 1);
@@ -320,7 +329,7 @@ void DetectionServer::image_callback(quac_interfaces::msg::ImageBGRD::SharedPtr 
                 mapping.objects[k].image, 
                 msg, 
                 detections[j], 
-                object_msg.objects[j].header.frame_id
+                mapping.objects[k].object.header.frame_id
               );
             }
 
@@ -332,16 +341,19 @@ void DetectionServer::image_callback(quac_interfaces::msg::ImageBGRD::SharedPtr 
       {
         mapped_object obj;
         
-        obj.object.header.frame_id = param.object_name + "_" + std::to_string(k);
+        obj.object = object_msg.objects[j];
+        obj.object.header.frame_id = param.object_name + "_" + std::to_string(mapping.object_counter);
         obj.times_detected = 1;
         create_mapped_image(
           obj.image, 
           msg, 
           detections[j], 
-          object_msg.objects[j].header.frame_id
+          obj.object.header.frame_id
         );
 
         mapping.objects.push_back(obj);
+
+        mapping.object_counter++;
 
         break;
       }

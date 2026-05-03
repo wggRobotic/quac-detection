@@ -60,7 +60,7 @@ void YOLODetectionServer::yolo_detection_callback(const quac_interfaces::msg::Im
     d.corners[3].y = results[j].box.y + results[j].box.height;
     
     d.header.frame_id = detectors[i]->getClassNames()[results[j].classId];
-    d.header.stamp = now();
+    d.header.stamp = msg->header.stamp;
     d.confidence = results[j].conf;
 
     detections.push_back(d);

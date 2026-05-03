@@ -91,6 +91,7 @@ protected:
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr delete_subscriber;
     
     std::vector<mapped_object> objects;
+    int object_counter;
   } mapping;
   
   struct

@@ -4,3 +4,6 @@
 [submodule "quac_detection/quirc"]
 	path = quac_detection/quirc
 	url = https://github.com/dlbeer/quirc.git
+[submodule "quac-interfaces"]
+	path = quac-interfaces
+	url = https://github.com/wggRobotic/quac-interfaces
