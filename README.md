@@ -16,10 +16,12 @@ quac_detection package
 ```
 object_name: String            # type of object detected by the server
 camera_names: String[]         # names of the cameras
+mapping: bool                  # enables global mapping of objects
 publish_rate: int              # rate that globally mapped objects are published at
 publish_images_period: int     # rate that images of globally mapped objects are published at
 reference_frame: String        # frame objects are mapped relative to
 consideration_radius: double   # radius around a mapped object in which detected objects are counted towards it 
+detection_weight: double       # how much the position in a new frame of an already mapped object influences its global position
 ```
 
 ## qrcode_detection_server : detection_server
@@ -28,7 +30,8 @@ consideration_radius: double   # radius around a mapped object in which detected
 
 ### parameters
 ```
-model_path: String      # path to the onnx model 
-engine_path: String     # path to the tensorrt engine
-labels_path: String     # path to the labels file
+model_path: String              # path to the onnx model 
+engine_path: String             # path to the tensorrt engine
+labels_path: String             # path to the labels file
+confidence_threshold: double    # confidence required for a detection to count 
 ```

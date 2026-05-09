@@ -18,4 +18,5 @@ private:
   std::string engine_path;
   std::string labels_path;
   std::string topic_name;
+  double confidence_threshold;
 };

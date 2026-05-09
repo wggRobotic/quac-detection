@@ -34,7 +34,7 @@ struct CameraHandler
 
 struct mapped_object
 {
-  int times_detected;
+  float weight;
   quac_interfaces::msg::DetectedObject object;
   sensor_msgs::msg::CompressedImage::SharedPtr image;
 };
@@ -100,5 +100,7 @@ protected:
     std::string object_name;
     std::string reference_frame;
     double consideration_radius;
+    double detection_weight;
+    bool mapping;
   } param;
 };

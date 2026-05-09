@@ -15,6 +15,8 @@ YOLODetectionServer::YOLODetectionServer() : DetectionServer(
   declare_parameter<std::string>("labels_path", "labels");
   labels_path = get_parameter("labels_path").as_string();
 
+  declare_parameter<double>("confidence_threshold", 0.5);
+  confidence_threshold = get_parameter("confidence_threshold").as_double();
 }
 
 int YOLODetectionServer::init()
@@ -45,7 +47,7 @@ int YOLODetectionServer::init()
 void YOLODetectionServer::yolo_detection_callback(const quac_interfaces::msg::ImageBGRD::SharedPtr msg, int i, std::vector<quac_interfaces::msg::BoundingBox>& detections)
 {
   cv::Mat image(msg->height, msg->width, CV_8UC3, (void*)msg->bgr_data.data());
-  std::vector<yolos::det::Detection> results = detectors[i]->detect(image);
+  std::vector<yolos::det::Detection> results = detectors[i]->detect(image, confidence_threshold);
 
   for (int j = 0; j < results.size(); j++)
   {
